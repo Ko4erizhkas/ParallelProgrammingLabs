@@ -125,7 +125,11 @@ public:
 			std::cerr << "Cannot open file" << std::endl;
 		}
 
-		
+
+
+
+
+		file.close();
 	}
 };
 int main()

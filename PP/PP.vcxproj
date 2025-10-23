@@ -72,8 +72,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>C:\Users\Ko4erizhka\source\repos\PP\PP\res\includes\pthread\pthreadIncludes;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\Ko4erizhka\source\repos\PP\PP\res\includes\pthread\pthreadLibs;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Users\Ko4erizhka\source\repos\Ko4erizhkas\ParallelProgrammingLabs\PP\res\includes\pthread\pthreadIncludes;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Users\Ko4erizhka\source\repos\Ko4erizhkas\ParallelProgrammingLabs\PP\res\includes\pthread\pthreadLibs;$(LibraryPath)</LibraryPath>
     <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
