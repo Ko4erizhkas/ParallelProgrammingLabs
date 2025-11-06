@@ -1,5 +1,8 @@
 #include "DelegateThreads.h"
 
+		
+	}
+};
 int main()
 {
 	DelegateThreads Dt;
