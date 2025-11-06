@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DelegateThreads.cpp" />
     <ClCompile Include="Lab2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DelegateThreads.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
