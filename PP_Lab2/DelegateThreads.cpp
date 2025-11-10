@@ -1,14 +1,14 @@
 #include "DelegateThreads.h"
-std::string DelegateThreads::primeNumber(int number)
+std::vector<int> DelegateThreads::primeNumber(int number)
 {
-	std::string answer = "";
+	std::vector<int> answer;
 	int div = 2;
 	while (number > 1)
 	{
 		while (number % div == 0)
 		{
 			number /= div;
-			answer += std::to_string(div) + ' ';
+			answer.push_back(div);
 		}
 		div++;
 	}
@@ -37,6 +37,7 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 
 	std::vector<std::string> answers;
 
+	// ѕереписать дл€ нормальной работы в многопотоке
 	auto primeNumber = [&](std::vector<std::vector<int>> chunk_numbers)
 		{
 			for (const auto& chunk : chunk_numbers)
@@ -45,8 +46,6 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 				{
 					std::string ans = "";
 					int div = 2;
-
-
 					while (number > 1)
 					{
 						while (number % div == 0)
@@ -56,7 +55,6 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 						}
 						div++;
 					}
-
 					answers.push_back(ans);
 				}
 			}
@@ -101,8 +99,30 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 	fileAnswers.close();
 }
 
+std::vector<std::vector<int>> DelegateThreads::primeNumberV1(std::vector<std::vector<int>> chunk_numbers, int count_threads)
+{
+	std::vector<std::vector<int>> chunk_answers;
+	chunk_numbers.resize(chunk_numbers.size());
 
+	int chunks_per_thread = chunk_numbers.size() / count_threads;
 
+	for (size_t i = 0; i < count_threads; ++i)
+	{
+		size_t start_index = i * chunks_per_thread;
+		size_t end_index = (i == count_threads - 1) ? chunks_per_thread : start_index + chunks_per_thread;
+		
+		mtx.lock();
+		for (size_t j = start_index; i < end_index; ++i)
+		{
+			for (int element : chunk_numbers[i])
+			{
+				chunk_answers.push_back(primeNumber(element));
+			}
+		}
+		mtx.unlock();
+	}
+	return chunk_answers;
+}
 
 
 void generateOnceFileWithRandomNumbers(std::string nameFile, int count)
