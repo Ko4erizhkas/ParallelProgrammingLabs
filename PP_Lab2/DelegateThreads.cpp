@@ -2,16 +2,28 @@
 std::vector<int> DelegateThreads::primeNumber(int number)
 {
 	std::vector<int> answer;
-	int div = 2;
-	while (number > 1)
-	{
-		while (number % div == 0)
-		{
-			number /= div;
-			answer.push_back(div);
-		}
-		div++;
+
+	if (number <= 1) return answer;
+
+	// Обработка делителя 2 отдельно
+	while (number % 2 == 0) {
+		answer.push_back(2);
+		number /= 2;
 	}
+
+	// Проверяем только нечётные делители
+	for (int div = 3; div * div <= number; div += 2) {
+		while (number % div == 0) {
+			answer.push_back(div);
+			number /= div;
+		}
+	}
+
+	// Если осталось простое число > 2
+	if (number > 1) {
+		answer.push_back(number);
+	}
+
 	return answer;
 }
 void DelegateThreads::working_threads(int count_threads, const std::string nameFile, const std::string nameFileAns)
@@ -35,32 +47,6 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 	}
 	file.close();
 
-	std::vector<std::string> answers;
-
-	// Переписать для нормальной работы в многопотоке
-	auto primeNumber = [&](std::vector<std::vector<int>> chunk_numbers)
-		{
-			for (const auto& chunk : chunk_numbers)
-			{
-				for (auto number : chunk)
-				{
-					std::string ans = "";
-					int div = 2;
-					while (number > 1)
-					{
-						while (number % div == 0)
-						{
-							number /= div;
-							ans += std::to_string(div) + ' ';
-						}
-						div++;
-					}
-					answers.push_back(ans);
-				}
-			}
-		};
-
-
 	std::vector<std::vector<int>> number_chunks;
 	auto divisionIntoChunks = [&number_chunks](const std::vector<int>& nums, size_t chunk_size)
 		{
@@ -75,56 +61,67 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 	// Поток для разбиения
 	std::thread division(divisionIntoChunks, readNumbers, 10);
 	std::cout << "Division thread id: " << division.get_id() << std::endl;
-
-	// Поток для расчёта множителей
-	std::thread prime(primeNumber, number_chunks);
-	std::cout << "Prime thread id: " << prime.get_id() << std::endl;
-
 	division.join();
-	prime.join();
 
+	std::vector<std::string> ans = primeNumberV2(number_chunks, 32);
 
-	std::ofstream fileAnswers(nameFileAns, std::ios::out);
+	std::ofstream fileAnswers(nameFileAns);
 	if (!fileAnswers.is_open())
 	{
 		std::cerr << "Cannot open file" << std::endl;
 		return;
 	}
 
-
-	for (auto str : answers)
+	for (auto str : ans)
 	{
-		fileAnswers << str << '\n';
+		fileAnswers << str;
 	}
 	fileAnswers.close();
 }
-
-std::vector<std::vector<int>> DelegateThreads::primeNumberV1(std::vector<std::vector<int>> chunk_numbers, int count_threads)
+std::vector<std::string> DelegateThreads::primeNumberV2(std::vector<std::vector<int>> chunk_numbers, int count_threads)
 {
-	std::vector<std::vector<int>> chunk_answers;
-	chunk_numbers.resize(chunk_numbers.size());
+	std::vector<std::string> answers;
+	std::vector<std::thread> threads;
 
 	int chunks_per_thread = chunk_numbers.size() / count_threads;
 
 	for (size_t i = 0; i < count_threads; ++i)
 	{
 		size_t start_index = i * chunks_per_thread;
-		size_t end_index = (i == count_threads - 1) ? chunks_per_thread : start_index + chunks_per_thread;
-		
-		mtx.lock();
-		for (size_t j = start_index; i < end_index; ++i)
-		{
-			for (int element : chunk_numbers[i])
+		size_t end_index = (i == count_threads - 1) ? chunk_numbers.size() : start_index + chunks_per_thread;
+
+		threads.emplace_back([&, start_index, end_index]() {
+			// Локальный вектор для результатов этого потока
+			std::vector<std::string> local_answers;
+
+			// Обрабатываем свой диапазон чанков
+			for (size_t j = start_index; j < end_index; ++j)
 			{
-				chunk_answers.push_back(primeNumber(element));
+				for (int element : chunk_numbers[j])
+				{
+					std::vector<int> ans_vec = primeNumber(element);
+					std::string ans = "";
+					for (int num : ans_vec)
+					{
+						ans += std::to_string(num) + ' ';
+					}
+					ans += '\n';
+					local_answers.push_back(ans);
+				}
 			}
-		}
-		mtx.unlock();
+
+			// Блокируем мьютекс только для объединения результатов
+			std::lock_guard<std::mutex> lock(mtx);
+			answers.insert(answers.end(), local_answers.begin(), local_answers.end());
+			});
 	}
-	return chunk_answers;
+
+	for (auto& thread : threads)
+	{
+		thread.join();
+	}
+	return answers;
 }
-
-
 void generateOnceFileWithRandomNumbers(std::string nameFile, int count)
 {
 	std::vector<int> vec;
