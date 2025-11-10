@@ -63,7 +63,7 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 	std::cout << "Division thread id: " << division.get_id() << std::endl;
 	division.join();
 
-	std::vector<std::string> ans = primeNumberV2(number_chunks, 32);
+	std::vector<std::string> ans = primeNumberV2(number_chunks, count_threads);
 
 	std::ofstream fileAnswers(nameFileAns);
 	if (!fileAnswers.is_open())
