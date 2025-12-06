@@ -74,8 +74,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>C:\Users\Ko4erizhka\source\repos\ParallelProgrammingLabs\PP_Lab1\res\includes\pthread\pthreadIncludes;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\Ko4erizhka\source\repos\ParallelProgrammingLabs\PP_Lab1\res\includes\pthread\pthreadLibs;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Users\Ko4erizhka\source\repos\Ko4erizhkas\ParallelProgrammingLabs\PP_Lab1\res\includes\pthread\pthreadIncludes;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Users\Ko4erizhka\source\repos\Ko4erizhkas\ParallelProgrammingLabs\PP_Lab1\res\includes\pthread\pthreadLibs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,6 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
