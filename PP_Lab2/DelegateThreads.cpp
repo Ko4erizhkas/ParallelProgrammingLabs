@@ -78,7 +78,7 @@ void DelegateThreads::working_threads(int count_threads, const std::string nameF
 	}
 	fileAnswers.close();
 }
-std::vector<std::string> DelegateThreads::primeNumberV2(std::vector<std::vector<int>> chunk_numbers, int count_threads)
+std::vector<std::string> DelegateThreads::primeNumberV2(std::deque<std::vector<int>> chunk_numbers, int count_threads)
 {
 	std::vector<std::string> answers;
 	std::vector<std::thread> threads;
@@ -92,7 +92,7 @@ std::vector<std::string> DelegateThreads::primeNumberV2(std::vector<std::vector<
 
 		threads.emplace_back([&, start_index, end_index]() {
 			// Локальный вектор для результатов этого потока
-			std::vector<std::string> local_answers;
+			std::deque<std::string> local_answers;
 
 			// Обрабатываем свой диапазон чанков
 			for (size_t j = start_index; j < end_index; ++j)

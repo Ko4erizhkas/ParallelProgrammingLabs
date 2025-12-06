@@ -10,9 +10,7 @@
 
 double squareX(double x)
 {
-    //return pow(x, 2);
-    //return sin(x);
-    return cos(x);
+    return pow(x, 2);
 }
 double calculateMidpoint(double a, double b, int intervals)
 {
@@ -41,8 +39,8 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     const double a = 0.0;
-    const double b = std::numbers::pi;
-    const int total_intervals = 100000000000;
+    const double b = 12343;
+    const int total_intervals = 9671872416;
 
 
     if (rank == 0)
