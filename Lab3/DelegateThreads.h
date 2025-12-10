@@ -9,6 +9,7 @@
 #include <random>
 #include <math.h>
 #include <queue>
+#include <algorithm>
 #include <omp.h>
 
 void generateOnceFileWithRandomNumbers(std::string nameFile, int count);

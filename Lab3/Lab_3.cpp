@@ -121,7 +121,7 @@ int main()
 	
 	
 	// –аскомментировать и использовать единожды, если нужно больше чисел в файле, просто измени второй параметр на желаемое число
-	//generateOnceFileWithRandomNumbers("ba.txt", 1500000);
+	// generateOnceFileWithRandomNumbers("ba.txt", 75000);
 	std::cout << "OpenMP (class DelegateThreads)" << std::endl;
 	for (int num_threads : thread_counts) {
 		auto start = std::chrono::high_resolution_clock::now();
@@ -130,7 +130,7 @@ int main()
 		auto multi_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	
 		std::cout << "Threads: " << num_threads
-			<< ", Time: " << multi_time.count() << " ms"
+			<< ", Time: " << multi_time.count() << " ms"	
 			<< std::endl;
 	}
 	return 0;

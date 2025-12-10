@@ -115,7 +115,7 @@ void DelegateThreads::working_threads_openmp(int count_threads,
 	all_numbers_processed = true;
 
 	// Каждый поток OpenMP вызывает worker_thread
-#pragma omp parallel num_threads(count_threads)
+	#pragma omp parallel num_threads(count_threads)
 	{
 		int thread_id = omp_get_thread_num();
 		worker_thread(out_file, thread_results[thread_id]);
