@@ -26,83 +26,109 @@ std::vector<int> DelegateThreads::primeNumber(int number)
 
 	return answer;
 }
-void DelegateThreads::working_threads(int count_threads, const std::string nameFile, const std::string nameFileAns)
+void DelegateThreads::worker_thread(std::ofstream& output_file, std::vector<std::string>& local_results)
 {
-	// Открываем поток чтения из файла
-	std::ifstream file(nameFile, std::ios::in);
-	if (!file.is_open())
+	while (true)
 	{
-		std::cerr << "Cannot open file" << std::endl;
+		int current_number = 0;
+		bool got_number = false;
+
+		{
+			std::lock_guard<std::mutex> lock(input_mutex);
+			if (!numbers_queue.empty())
+			{
+				current_number = numbers_queue.front();
+				numbers_queue.pop();
+				got_number = true;
+			}
+			else if (all_numbers_processed)
+			{
+				break;
+			}
+		}
+		if (!got_number)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			continue;
+		}
+		std::vector<int> factors = primeNumber(current_number);
+
+		std::string result = std::to_string(current_number) + ": ";
+
+		for (size_t i = 0; i < factors.size(); ++i)
+		{
+			result += std::to_string(factors[i]);
+			if (i < factors.size() - 1) result += " ";
+		}
+		result += '\n';
+
+		local_results.push_back(result);
+
+		if (local_results.size() >= max_batch_size)
+		{
+			std::lock_guard<std::mutex> lock(output_mutex);
+			for (const auto& res : local_results)
+			{
+				output_file << res;
+			}
+			local_results.clear();
+			output_file.flush();
+		}
+		
+	}
+	if (local_results.empty())
+	{
+		std::lock_guard<std::mutex> lock(output_mutex);
+		for (const auto& res : local_results)
+		{
+			output_file << res;
+		}
+		output_file.flush();
+	}
+}
+void DelegateThreads::working_threads(int count_threads, const std::string& input_file,
+	const std::string& output_file) {
+
+
+	std::ifstream file(input_file);
+	if (!file.is_open()) {
+		std::cerr << "Cannot open input file" << std::endl;
 		return;
 	}
 
-	// Прочитали и закрыли
-
-	std::string str;
-	std::vector<int> readNumbers;
-
-	while (file >> str)
-	{
-		readNumbers.push_back(std::stoi(str));
+	int number;
+	while (file >> number) {
+		numbers_queue.push(number);
 	}
 	file.close();
 
-	std::vector<std::string> ans = primeNumberV2(readNumbers, count_threads);
 
-	std::ofstream fileAnswers(nameFileAns);
-	if (!fileAnswers.is_open())
-	{
-		std::cerr << "Cannot open file" << std::endl;
+	std::ofstream out_file(output_file);
+	if (!out_file.is_open()) {
+		std::cerr << "Cannot open output file" << std::endl;
 		return;
 	}
 
-	for (auto str : ans)
-	{
-		fileAnswers << str;
-	}
-	fileAnswers.close();
-}
-std::vector<std::string> DelegateThreads::primeNumberV2(std::vector<int> numbers, int count_threads)
-{
-	std::vector<std::string> answers;
+
 	std::vector<std::thread> threads;
+	std::vector<std::vector<std::string>> thread_results(count_threads);
 
-	int chunks_per_thread = numbers.size() / count_threads;
-
-	for (size_t i = 0; i < count_threads; ++i)
-	{
-		size_t start_index = i * chunks_per_thread;
-		size_t end_index = (i == count_threads - 1) ? numbers.size() : start_index + chunks_per_thread;
-
-		threads.emplace_back([&, start_index, end_index]() {
-
-			// Локальный вектор для результатов этого потока
-			std::vector<std::string> local_answers;
-
-			for (size_t j = start_index; j < end_index; ++j)
-			{
-				int number = numbers[j];
-				std::vector<int> ans_vec = primeNumber(numbers[j]);
-				std::string ans = "";
-				for (int num : ans_vec)
-				{
-					ans += std::to_string(num) + ' ';
-				}
-				ans += '\n';
-				local_answers.push_back(ans);
-			}
-
-			// Блокируем мьютекс только для объединения результатов
-			std::lock_guard<std::mutex> lock2(mtx2);
-			answers.insert(answers.end(), local_answers.begin(), local_answers.end());
-			});
+	for (int i = 0; i < count_threads; ++i) {
+		threads.emplace_back(&DelegateThreads::worker_thread, this,
+			std::ref(out_file), std::ref(thread_results[i]));
 	}
 
-	for (auto& thread : threads)
-	{
-		thread.join();
+	// Сигнал потокам, что все числа загружены
+	all_numbers_processed = true;
+
+
+	for (auto& thread : threads) {
+		if (thread.joinable()) {
+			thread.join();
+		}
 	}
-	return answers;
+
+	out_file.close();
 }
 
 void generateOnceFileWithRandomNumbers(std::string nameFile, int count)
