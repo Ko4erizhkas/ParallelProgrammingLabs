@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
         MPI_Finalize();
         return 0;
     }
-
+     
 
     int N = std::atoi(argv[1]);
     int M = std::atoi(argv[2]);
